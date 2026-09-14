@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f5f5f5"><title>Ribbon — 螺旋影像</title>
+<style>
+:root{color-scheme:light;--bg:oklch(.97 0 0);--ink:oklch(.23 .008 268);--muted:oklch(.48 .01 268);--line:oklch(.84 .004 268);--brand:oklch(.49 .13 268);--surface:oklch(1 0 0)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.5 Arial,"Microsoft YaHei",sans-serif;overflow:hidden}button,input{font:inherit}button{cursor:pointer;color:inherit}button:focus-visible,input:focus-visible,canvas:focus-visible{outline:2px solid var(--brand);outline-offset:5px}button{border:0;background:none;padding:9px 13px;min-height:38px;border-radius:5px}button:hover{background:oklch(.91 0 0)}button[aria-pressed=true]{background:var(--ink);color:white}header{position:fixed;inset:0 0 auto;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:24px 36px;gap:18px}.identity{display:flex;align-items:center;gap:14px}.mark{font-size:26px;font-weight:700;letter-spacing:-1px}.identity span{border-left:1px solid var(--line);padding-left:14px;color:var(--muted);line-height:1.7}.toolbar{display:flex;align-items:center;gap:7px}.switch{display:flex;gap:2px;border:1px solid var(--line);padding:3px;border-radius:8px}.plain{border:1px solid var(--line)}#scene{position:fixed;inset:0;width:100%;height:100%;touch-action:none;z-index:1;cursor:ns-resize}.endpoint{position:fixed;z-index:2;pointer-events:none;display:flex;gap:8px;align-items:center;white-space:nowrap;will-change:transform}.endpoint b{display:grid;place-items:center;width:29px;height:29px;border:1px solid var(--ink);border-radius:50%;background:var(--surface);font-size:12px}.endpoint span{padding:3px 6px;background:var(--bg);font-size:11px}.endpoint.tail b{background:var(--ink);color:white}.side-note{position:fixed;left:36px;bottom:139px;z-index:2;color:var(--muted);font-size:11px;line-height:1.9;pointer-events:none}.side-note strong{font-weight:400;color:var(--ink)}.legend{display:flex;gap:15px;margin-top:12px}.legend i{display:inline-block;width:10px;height:10px;margin-right:6px;border:1px solid var(--line);background:oklch(.32 .07 268)}.legend .back{background:oklch(.88 .02 268)}.axis{position:fixed;right:36px;bottom:143px;z-index:2;text-align:right;font-size:11px;color:var(--muted)}.axis button{border:1px solid var(--line);display:block;margin:8px 0 0 auto;min-height:32px;padding:5px 10px;font-size:11px}footer{position:fixed;inset:auto 36px 25px;z-index:3;border-top:1px solid var(--line);padding-top:16px;display:grid;grid-template-columns:1fr minmax(180px,400px) 1fr;align-items:center;gap:25px}.instruction{display:flex;align-items:center;gap:13px}.scroll-icon{height:30px;width:19px;border:1px solid var(--muted);border-radius:10px;position:relative}.scroll-icon:after{content:"";position:absolute;left:8px;top:6px;height:6px;border-left:1px solid var(--muted)}.instruction small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.timeline label{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:7px}.timeline output{font-variant-numeric:tabular-nums;color:var(--ink)}input[type=range]{display:block;width:100%;height:16px;accent-color:var(--ink);cursor:ew-resize;margin:0}.end-tools{display:flex;align-items:center;justify-content:flex-end;gap:8px}.end-tools small{color:var(--muted);font-size:10px}#notice{position:fixed;left:50%;bottom:115px;transform:translateX(-50%);padding:9px 15px;background:var(--ink);color:white;z-index:5;border-radius:5px;max-width:80%;text-align:center}#notice:empty{display:none}#files{display:none}#error{position:fixed;inset:30% 15%;z-index:6;background:var(--surface);padding:30px;border:1px solid var(--line);text-align:center}#error[hidden]{display:none}
+@media(max-width:700px){header{padding:18px;align-items:flex-start}.mark{font-size:21px}.identity span{font-size:10px;padding-left:9px}.identity{gap:9px}.toolbar{gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:220px}.toolbar button{font-size:11px;padding:6px 9px;min-height:33px}.side-note{left:18px;bottom:173px}.axis{right:18px;bottom:178px}footer{inset:auto 18px 18px;grid-template-columns:1fr 1fr;gap:13px}.timeline{grid-column:1/-1;grid-row:1}.instruction{font-size:11px}.end-tools small{display:none}.endpoint span{font-size:10px}#notice{bottom:155px}.side-note .detail{display:none}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+#head b{background:oklch(.57 .15 137);color:white;border-color:transparent}#tail b{background:oklch(.59 .2 27);color:white;border-color:transparent}.legend i{background:oklch(.5 .19 266)}.legend .back{background:oklch(.8 .07 237)}</style>
+</head>
+<body>
+<header><div class="identity"><div class="mark">ribbon.</div><span>螺旋影像<br>十帧轨迹模型</span></div><nav class="toolbar" aria-label="模型显示"><div class="switch"><button id="images" aria-pressed="false">影像</button><button id="structure" aria-pressed="true">结构</button></div><button class="plain" id="guide" aria-pressed="false">显示轨迹</button><button class="plain" id="import">导入图片 ↗</button></nav></header>
+<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap">LIANGHE AGENT</h1>
+<canvas id="scene" tabindex="0" aria-label="三维双面丝带。向下滚动顺时针上升，向上滚动反向下降；也支持上下方向键和触摸拖动。"></canvas>
+<div class="endpoint" id="head"><b>1</b><span>头部</span></div><div class="endpoint tail" id="tail"><b>2</b><span>尾部</span></div>
+<aside class="side-note"><strong>10 张影像 · 16∶10</strong><br><span class="detail">同一条带面，沿连续螺旋前进</span><div class="legend"><span><i></i>深色正面</span><span><i class="back"></i>浅色背面</span></div></aside>
+<aside class="axis">↻ 顺时针 · 向上<br><span id="view-label">从上向下看旋转方向</span><button id="view" aria-pressed="false">俯视检查 ↗</button></aside>
+<footer><div class="instruction"><i class="scroll-icon" aria-hidden="true"></i><div>下滚上升，上滚回退<small>触屏上下拖动 · 键盘 ↑ ↓</small></div></div><div class="timeline"><label for="progress"><span id="frame-label">轨迹帧 01 / 10</span><output id="percent">0%</output></label><input type="range" id="progress" min="0" max="1000" step="1" value="0" aria-label="运动进度"></div><div class="end-tools"><small id="image-count">10 张示例画面</small><button class="plain" id="reset">↺ 复位</button></div></footer>
+<input type="file" id="files" accept="image/*" multiple><div id="notice" role="status" aria-live="polite"></div><div id="error" role="alert" hidden>当前浏览器未启用 WebGL 2。请在 Chrome 或 Edge 开启硬件加速后重新打开。<p><button class="plain" onclick="location.reload()">重新加载</button></p></div>
+<script>
+(() => {
+'use strict';
+const $=id=>document.getElementById(id), canvas=$('scene');
+const gl=canvas.getContext('webgl2',{alpha:true,antialias:true,premultipliedAlpha:false});
+if(!gl){$('error').hidden=false;return;}
+// Material coordinate s increases from tail to head; q translates EVERY point
+// along the SAME path. There is no whole-object spin, endpoint swap or wrapping.
+const TAU=Math.PI*2, RX=3.6, RZ=6.3, PITCH=3.0, P=PITCH/TAU;
+const PHASE=-.02, Y0=-.65, INITIAL=0;
+// Keep an open half-orbit; the front/back axis is 1.75 times the left/right axis.
+// Arc-length parametrization prevents photos stretching at the ellipse's ends.
+const ARC_STEPS=4096, arcTable=new Float64Array(ARC_STEPS+1);
+const speed=t=>Math.hypot(RX*Math.sin(t+PHASE),RZ*Math.cos(t+PHASE),P);
+for(let i=1;i<=ARC_STEPS;i++)arcTable[i]=arcTable[i-1]+(speed((i-1)*TAU/ARC_STEPS)+speed(i*TAU/ARC_STEPS))*.5*TAU/ARC_STEPS;
+const ORBIT_LENGTH=arcTable[ARC_STEPS], LENGTH=ORBIT_LENGTH/2, WIDTH=LENGTH/16, SPAN=Math.PI;
+function distanceAtAngle(t){const turns=Math.floor(t/TAU),x=(t/TAU-turns)*ARC_STEPS,i=Math.min(ARC_STEPS-1,Math.floor(x));return turns*ORBIT_LENGTH+arcTable[i]+(arcTable[i+1]-arcTable[i])*(x-i);}
+function angleAtDistance(s){const turns=Math.floor(s/ORBIT_LENGTH),local=s-turns*ORBIT_LENGTH;let lo=0,hi=ARC_STEPS;while(hi-lo>1){const mid=(lo+hi)>>1;if(arcTable[mid]>local)hi=mid;else lo=mid;}return turns*TAU+(lo+(local-arcTable[lo])/(arcTable[hi]-arcTable[lo]))*TAU/ARC_STEPS;}
+let progress=INITIAL,target=INITIAL, structural=true,guides=false,topView=false;
+let lastTime=0,raf=0,contextLost=false,timer,loadedCount=0;
+const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+const vs=`#version 300 es
+precision highp float;
+layout(location=0) in vec3 aTUV;
+uniform mat4 uVP;
+out vec2 vUV; out vec3 vN; out vec3 vWorld;
+const float RX=${RX.toFixed(8)},RZ=${RZ.toFixed(8)},P=${P.toFixed(10)},W=${WIDTH.toFixed(10)};
+void main(){
+ float t=aTUV.x, a=t+${PHASE.toFixed(8)};
+ vec3 tangent=normalize(vec3(-RX*sin(a),P,RZ*cos(a)));
+ vec3 b=normalize(vec3(0.,1.,0.)-tangent*tangent.y);
+ vec3 pos=vec3(RX*cos(a),${Y0.toFixed(8)}+P*t,RZ*sin(a))+(aTUV.z-.5)*W*b;
+ vWorld=pos; vN=vec3(cos(a)/RX,0.,sin(a)/RZ);vUV=aTUV.yz;
+ gl_Position=uVP*vec4(pos,1.);
+}`;
+const fs=`#version 300 es
+precision highp float;
+in vec2 vUV; in vec3 vN; in vec3 vWorld;
+uniform highp sampler2DArray uImages; uniform bool uStructure;
+uniform vec3 uEye;
+out vec4 frag;
+void main(){
+ float panel=clamp(floor(vUV.x),0.,9.);
+ vec2 materialUV=vec2(-vUV.x,1.-vUV.y);
+ vec2 uv=vec2(1.-clamp(vUV.x-panel,0.,1.),materialUV.y);
+ // Differentiate the continuous coordinate, not fract(): panel seams must
+ // not select blurry mip levels. The same UV on both sides mirrors naturally.
+ vec3 photo=textureGrad(uImages,vec3(uv,panel),dFdx(materialUV),dFdy(materialUV)).rgb;
+ vec3 n=normalize(vN); bool front=dot(n,uEye-vWorld)>0.;
+ vec3 ink=vec3(.22,.35,.79),back=vec3(.60,.77,.90);
+ vec3 col;
+ if(uStructure){col=front?ink:back;}
+ else{col=front?photo:mix(photo,vec3(.86,.92,.97),.24);}
+ float light=uStructure?(front?.88+.12*max(dot(n,normalize(vec3(-.4,.9,1.))),0.):.96):1.;
+ col*=light;
+ float edge=min(min(uv.x,1.-uv.x)*1.6,min(uv.y,1.-uv.y));
+ if(!uStructure){float edgeAA=max(fwidth(edge),.0001);float border=1.-smoothstep(0.,edgeAA*.65,edge);col=mix(col,front?vec3(.08,.10,.17):vec3(.66,.71,.81),border*.35);}
+ if(uStructure){float seam=1.-smoothstep(.003,.010,min(uv.x,1.-uv.x));col=mix(col,front?vec3(.66,.75,.96):vec3(.79,.87,.94),seam*.65);}
+ if(!front && (uv.y<.029 || uv.y>.971))col*=.95;
+ frag=vec4(col,1.);
+}`;
+const lvs=`#version 300 es
+precision highp float;layout(location=0) in vec3 aPos;uniform mat4 uVP;void main(){gl_Position=uVP*vec4(aPos,1.);}`;
+const lfs=`#version 300 es
+precision highp float;uniform vec4 uColor;out vec4 frag;void main(){frag=uColor;}`;
+const tvs=`#version 300 es
+precision highp float;
+layout(location=0) in vec2 aCorner;
+uniform mat4 uVP; uniform vec3 uOrigin; uniform vec2 uSize;
+out vec2 vUV;
+void main(){vUV=vec2(aCorner.x,1.-aCorner.y);gl_Position=uVP*vec4(uOrigin+vec3((aCorner-.5)*uSize,0.),1.);}`;
+const tfs=`#version 300 es
+precision highp float;
+in vec2 vUV;uniform sampler2D uText;out vec4 frag;
+void main(){float alpha=texture(uText,vUV).a;if(alpha<.01)discard;frag=vec4(vec3(.64),alpha);}`;
+function shader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;}
+function program(v,f){const p=gl.createProgram(),a=shader(gl.VERTEX_SHADER,v),b=shader(gl.FRAGMENT_SHADER,f);gl.attachShader(p,a);gl.attachShader(p,b);gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p));gl.deleteShader(a);gl.deleteShader(b);return p;}
+let mesh,line,titleMesh;
+try{mesh=program(vs,fs);line=program(lvs,lfs);titleMesh=program(tvs,tfs);}catch(e){console.error(e);$('error').hidden=false;return;}
+const uniforms=Object.fromEntries(['uVP','uImages','uStructure','uEye'].map(n=>[n,gl.getUniformLocation(mesh,n)]));
+const lineVP=gl.getUniformLocation(line,'uVP'),lineColor=gl.getUniformLocation(line,'uColor');
+const vao=gl.createVertexArray();gl.bindVertexArray(vao);
+const N=1000,vertices=new Float32Array((N+1)*6),meshBuffer=gl.createBuffer();let geometryQ=NaN;
+gl.bindBuffer(gl.ARRAY_BUFFER,meshBuffer);gl.bufferData(gl.ARRAY_BUFFER,vertices.byteLength,gl.DYNAMIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);
+function updateGeometry(q){if(q===geometryQ)return;geometryQ=q;for(let i=0;i<=N;i++){const t=angleAtDistance(q+LENGTH*i/N),u=10*i/N,j=i*6;vertices[j]=vertices[j+3]=t;vertices[j+1]=vertices[j+4]=u;vertices[j+2]=0;vertices[j+5]=1;}gl.bindBuffer(gl.ARRAY_BUFFER,meshBuffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,vertices);}
+const guideVAO=gl.createVertexArray();gl.bindVertexArray(guideVAO);gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer());
+const path=[];
+for(let i=0;i<900;i++){if(i%3===0)continue;let t=-SPAN+i/900*(TAU+SPAN);for(let k=0;k<2;k++){let a=t+k*(TAU+SPAN)/900;path.push(RX*Math.cos(a+PHASE),Y0+P*a,RZ*Math.sin(a+PHASE));}}
+for(let i=0;i<160;i++){for(let k=0;k<2;k++){let a=(i+k)/160*TAU;path.push(RX*Math.cos(a),-4.2,RZ*Math.sin(a));}}
+path.push(0,-4.8,0,0,7,0);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(path),gl.STATIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);
+const texture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D_ARRAY,texture);
+const TEXW=1600,TEXH=1000;
+gl.texStorage3D(gl.TEXTURE_2D_ARRAY,1+Math.floor(Math.log2(TEXW)),gl.RGBA8,TEXW,TEXH,10);gl.texParameteri(gl.TEXTURE_2D_ARRAY,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D_ARRAY,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D_ARRAY,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D_ARRAY,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+const anisotropy=gl.getExtension('EXT_texture_filter_anisotropic');
+if(anisotropy)gl.texParameterf(gl.TEXTURE_2D_ARRAY,anisotropy.TEXTURE_MAX_ANISOTROPY_EXT,Math.min(8,gl.getParameter(anisotropy.MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
+function finishTextures(){gl.bindTexture(gl.TEXTURE_2D_ARRAY,texture);gl.generateMipmap(gl.TEXTURE_2D_ARRAY);}
+function upload(i,c){gl.bindTexture(gl.TEXTURE_2D_ARRAY,texture);gl.texSubImage3D(gl.TEXTURE_2D_ARRAY,0,0,0,i,TEXW,TEXH,1,gl.RGBA,gl.UNSIGNED_BYTE,c);}
+function poster(i){
+ const c=document.createElement('canvas');c.width=TEXW;c.height=TEXH;const g=c.getContext('2d');g.scale(TEXW/800,TEXH/500);
+ const colors=['#dbe3ed','#283548','#bf492f','#c3bdd9','#1c4946','#dddddd','#ced747','#3a4897','#dcc4c1','#232323'];
+ const fg=['#1b293c','#f3eee3','#fff1e6','#342346','#e9efe5','#282828','#243027','#edf0ff','#572c32','#eeeeee'];
+ const titles=['IN / FORM','STILL','CHROMA','SOFT / SPACE','AFTER / HOURS','OBJECTS','OFF / GRID','BLUE / NOTE','SLOW / DAYS','NEXT.'];
+ g.fillStyle=colors[i];g.fillRect(0,0,800,500);g.fillStyle=fg[i];
+ g.font='17px Arial';g.fillText('RIBBON  /  VISUAL STUDIES',30,34);g.fillText(String(i+1).padStart(2,'0')+' — 10',687,34);
+ g.save();g.globalAlpha=.26;
+ if(i%3===0){for(let n=0;n<7;n++){g.beginPath();g.ellipse(580,260,52+n*24,150,Math.PI/5,0,TAU);g.lineWidth=7;g.strokeStyle=fg[i];g.stroke();}}
+ else if(i%3===1){g.translate(580,265);g.rotate(-.35);for(let n=0;n<5;n++){g.fillRect(-130+n*40,-170+n*25,30,320);}}
+ else {g.beginPath();g.arc(610,225,170,0,TAU);g.fill();g.globalAlpha=.35;g.fillRect(380,310,330,75);}
+ g.restore();g.fillStyle=fg[i];const words=titles[i].split(' / ');g.font='bold 90px Arial';words.forEach((w,n)=>g.fillText(w,30,235+n*91));g.font='15px Arial';g.fillText('MOTION ARCHIVE',31,469);g.fillText('16 : 10',709,469);return c;
+}
+for(let i=0;i<10;i++)upload(i,poster(9-i));
+finishTextures();
+// These are actual cut-out letter surfaces at Z=0, not a DOM overlay.
+// They share the ribbon's depth buffer: near photos cover letters, letters
+// cover far photos, and transparent areas never hide any geometry.
+const titleVAO=gl.createVertexArray();gl.bindVertexArray(titleVAO);
+gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer());gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([0,0,1,0,0,1,1,1]),gl.STATIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+const titleUniforms=Object.fromEntries(['uVP','uOrigin','uSize','uText'].map(n=>[n,gl.getUniformLocation(titleMesh,n)]));
+function titleRow(word,y,direction){
+ const c=document.createElement('canvas'),g=c.getContext('2d');g.font='240px Arial';const m=g.measureText(word),ascent=Math.ceil(m.actualBoundingBoxAscent),descent=Math.ceil(m.actualBoundingBoxDescent);
+ c.width=Math.ceil(m.width)+24;c.height=ascent+descent+24;g.font='240px Arial';g.fillStyle='#fff';g.fillText(word,12,12+ascent);
+ const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,c);gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+ return {word,y,direction,texture:tex,width:c.width/c.height*.94,height:.94};
+}
+const titleRows=[titleRow('LIANGHE',1.12,1),titleRow('AGENT',-.08,-1)];
+function drawTitle(vp){
+ gl.useProgram(titleMesh);gl.bindVertexArray(titleVAO);gl.uniformMatrix4fv(titleUniforms.uVP,false,vp);gl.uniform1i(titleUniforms.uText,1);gl.activeTexture(gl.TEXTURE1);
+ gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+ for(const row of titleRows){
+  const depth=vp[7]*row.y+vp[15],halfViewport=depth/Math.abs(vp[0]);
+  const x=row.direction*(halfViewport+row.width*.5+.3)*Math.pow(progress,3);
+  gl.bindTexture(gl.TEXTURE_2D,row.texture);gl.uniform3f(titleUniforms.uOrigin,x,row.y,0);gl.uniform2f(titleUniforms.uSize,row.width,row.height);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  canvas.dataset[row.word.toLowerCase()+'X']=x.toFixed(6);
+ }
+ gl.disable(gl.BLEND);gl.activeTexture(gl.TEXTURE0);
+}
+const subtract=(a,b)=>a.map((v,i)=>v-b[i]);
+const normalize=a=>{const n=Math.hypot(...a);return a.map(v=>v/n);};
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
+function multiply(a,b){const out=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)for(let k=0;k<4;k++)out[c*4+r]+=a[k*4+r]*b[c*4+k];return out;}
+function camera(eye,center,aspect){
+ const z=normalize(subtract(eye,center)),x=normalize(cross([0,1,0],z)),y=cross(z,x);
+ const view=new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-dot(x,eye),-dot(y,eye),-dot(z,eye),1]);
+ // A fixed horizontal lens keeps the whole ribbon near 90% of the width
+ // at the reference pose, including on ultrawide windows. This is a uniform
+ // projection zoom, not a change to the ellipse or the photos' proportions.
+ const wideFov=2*Math.atan(Math.tan(15*Math.PI/180)/aspect)*180/Math.PI;
+ const wideBlend=Math.max(0,Math.min(1,(aspect-.85)/.4));
+ const fov=topView?36:46+(wideFov-46)*wideBlend;
+ const f=1/Math.tan(fov*Math.PI/360),n=.1,far=100;
+ return multiply(new Float32Array([f/aspect,0,0,0,0,f,0,0,0,0,(far+n)/(n-far),-1,0,0,2*far*n/(n-far),0]),view);
+}
+function centerline(s,q){let t=angleAtDistance(q+s),a=t+PHASE;return [RX*Math.cos(a),Y0+P*t,RZ*Math.sin(a)];}
+function marker(el,world,vp,eye){
+ const h=[...world,1],clip=[0,0,0,0];for(let r=0;r<4;r++)for(let k=0;k<4;k++)clip[r]+=vp[k*4+r]*h[k];
+ const x=(clip[0]/clip[3]*.5+.5)*innerWidth,y=(-clip[1]/clip[3]*.5+.5)*innerHeight;
+ el.style.transform=`translate(${x+13}px,${y-15}px)`;
+ el.style.display=clip[3]>0&&x>0&&x<innerWidth-70&&y>80&&y<innerHeight-110?'flex':'none';
+ el.style.opacity='1';
+}
+function render(now){
+ raf=0;if(contextLost)return;
+ const dt=Math.min((now-lastTime)/1000||.016,.05);lastTime=now;
+ progress=reduced.matches?target:progress+(target-progress)*(1-Math.exp(-dt*12));
+ if(Math.abs(target-progress)<.00001)progress=target;
+ const dpr=Math.min(devicePixelRatio||1,2),w=Math.round(innerWidth*dpr),h=Math.round(innerHeight*dpr);
+ if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}
+ const aspect=w/h,dist=aspect<1?15.5/aspect*.78:16.0;
+ // Fixed gentle low-angle view: the leading photo rises at the near turn.
+ // Keep the elevation consistent on narrow screens; all motion stays on the helix.
+ const cameraZ=Math.max(16.0,dist),eye=topView?[0,23,.001]:[0,0.5-cameraZ*(1.6/19.0),cameraZ];
+ const vp=camera(eye,[0,.5,0],aspect),q=distanceAtAngle(progress*TAU)-LENGTH;
+ updateGeometry(q);
+ gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.disable(gl.BLEND);
+ if(guides){gl.useProgram(line);gl.bindVertexArray(guideVAO);gl.uniformMatrix4fv(lineVP,false,vp);gl.uniform4f(lineColor,.46,.5,.61,1);gl.drawArrays(gl.LINES,0,path.length/3);}
+ gl.useProgram(mesh);gl.bindVertexArray(vao);gl.uniformMatrix4fv(uniforms.uVP,false,vp);gl.uniform1i(uniforms.uStructure,structural?1:0);gl.uniform3fv(uniforms.uEye,eye);gl.uniform1i(uniforms.uImages,0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D_ARRAY,texture);gl.drawArrays(gl.TRIANGLE_STRIP,0,(N+1)*2);
+ drawTitle(vp);
+ marker($('head'),centerline(LENGTH,q),vp,eye);marker($('tail'),centerline(0,q),vp,eye);
+ $('percent').textContent=Math.round(progress*100)+'%';$('progress').value=Math.round(progress*1000);$('frame-label').textContent=`轨迹帧 ${String(Math.round(progress*9)+1).padStart(2,'0')} / 10`;
+ canvas.dataset.progress=progress.toFixed(6);canvas.dataset.headY=centerline(LENGTH,q)[1].toFixed(6);canvas.dataset.tailY=centerline(0,q)[1].toFixed(6);canvas.dataset.angle=(progress*TAU+PHASE).toFixed(6);canvas.dataset.mode=structural?'structure':'images';canvas.dataset.view=topView?'top':'front';canvas.dataset.axes=`${RX},${RZ}`;canvas.dataset.pitch=String(PITCH);
+ if(progress!==target)invalidate();
+}
+function invalidate(){if(!raf&&!contextLost)raf=requestAnimationFrame(render);}
+function move(delta){target=Math.max(0,Math.min(1,target+delta));invalidate();}
+function notify(message){$('notice').textContent=message;clearTimeout(timer);timer=setTimeout(()=>{$('notice').textContent='';},4200);}
+window.addEventListener('wheel',e=>{if(e.ctrlKey)return;e.preventDefault();const pixels=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?innerHeight:1);move(Math.max(-450,Math.min(450,pixels))*.000095);},{passive:false});
+window.addEventListener('keydown',e=>{if(e.target.matches('input,button'))return;if(['ArrowDown','ArrowUp','PageDown','PageUp','Home','End'].includes(e.key)){e.preventDefault();if(e.key==='Home')target=0;else if(e.key==='End')target=1;else move((e.key.includes('Down')?1:-1)*(e.key.includes('Page')?.08:.015));invalidate();}});
+let pointer=null;canvas.addEventListener('pointerdown',e=>{pointer={id:e.pointerId,y:e.clientY};canvas.setPointerCapture(e.pointerId);canvas.focus({preventScroll:true});});
+canvas.addEventListener('pointermove',e=>{if(pointer&&pointer.id===e.pointerId){move((pointer.y-e.clientY)*.00035);pointer.y=e.clientY;}});
+const endPointer=()=>{pointer=null;};canvas.addEventListener('pointerup',endPointer);canvas.addEventListener('pointercancel',endPointer);canvas.addEventListener('lostpointercapture',endPointer);
+$('progress').addEventListener('input',e=>{target=Number(e.target.value)/1000;invalidate();});
+$('reset').addEventListener('click',()=>{target=INITIAL;topView=false;$('view').setAttribute('aria-pressed','false');$('view').textContent='俯视检查 ↗';invalidate();});
+function mode(value){structural=value;$('structure').setAttribute('aria-pressed',String(value));$('images').setAttribute('aria-pressed',String(!value));invalidate();}
+$('structure').addEventListener('click',()=>mode(true));$('images').addEventListener('click',()=>mode(false));
+$('guide').addEventListener('click',()=>{guides=!guides;$('guide').setAttribute('aria-pressed',String(guides));$('guide').textContent=guides?'隐藏轨迹':'显示轨迹';invalidate();});
+$('view').addEventListener('click',()=>{topView=!topView;$('view').setAttribute('aria-pressed',String(topView));$('view').textContent=topView?'返回正视 ↙':'俯视检查 ↗';invalidate();});
+$('import').addEventListener('click',()=>$('files').click());
+$('files').addEventListener('change',async e=>{
+ const files=Array.from(e.target.files).slice(0,10);if(!files.length)return;
+ $('import').disabled=true;let success=0;
+ for(let i=0;i<files.length;i++){
+  let bitmap;try{bitmap=await createImageBitmap(files[i]);const c=document.createElement('canvas');c.width=TEXW;c.height=TEXH;const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';const ratio=Math.max(TEXW/bitmap.width,TEXH/bitmap.height);g.drawImage(bitmap,(TEXW-bitmap.width*ratio)/2,(TEXH-bitmap.height*ratio)/2,bitmap.width*ratio,bitmap.height*ratio);upload(9-i,c);success++;}catch(err){console.warn('Image decode failed',files[i].name);}finally{bitmap?.close();}
+ }
+ finishTextures();loadedCount=success;$('image-count').textContent=`${loadedCount} 张已替换 · ${10-loadedCount} 张示例`;$('import').disabled=false;e.target.value='';mode(false);
+ notify(`已替换 ${success} 张，按选择顺序从头部排列。图片仅在本机使用，刷新后恢复示例。`);
+});
+window.addEventListener('resize',invalidate);reduced.addEventListener('change',invalidate);
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();contextLost=true;if(raf)cancelAnimationFrame(raf);raf=0;notify('图形上下文已暂停，请重新加载页面。');});
+canvas.addEventListener('webglcontextrestored',()=>location.reload());
+invalidate();
+})();
+</script>
+</body></html>
+
