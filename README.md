@@ -1,9 +1,7 @@
 
 
 
-
-https://github.com/user-attachments/assets/84c32177-3d05-4f66-b688-8ba7769b7a9f
-
+Uploading 9月16日.mp4…
 
 
 需要网页设计可以联系我，你只需要提供一个视频或者一个想法，即可实现自己的网站部署；
